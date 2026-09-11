@@ -339,26 +339,6 @@
       user-select: none;
       outline: none;
       transition: transform .18s ease;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
-      filter: contrast(1.08) saturate(1.15);
-    }
-    .coin-container::before {
-      /* pixel "thickness" rim seen during 3D flip */
-      content: "";
-      position: absolute;
-      inset: 8px;
-      border-radius: 50%;
-      background:
-        repeating-linear-gradient(
-          90deg,
-          #b45309 0 4px,
-          #fbbf24 4px 8px,
-          #92400e 8px 12px
-        );
-      transform: translateZ(-8px);
-      box-shadow: 0 0 0 6px #78350f;
-      z-index: -1;
     }
 
     .coin-container:hover { transform: translateY(-4px) scale(1.03); }
@@ -376,17 +356,14 @@
       backface-visibility: hidden;
       display: grid;
       place-items: center;
-      border: 10px solid #78350f;
-      /* chunky pixel rim + 3D bevel */
+      border: 10px solid #92400e;
       box-shadow:
-        0 18px 0 #3f1f05,
-        0 22px 28px rgba(0,0,0,.85),
-        inset 0 16px 18px rgba(255,255,255,.38),
-        inset 0 -18px 22px rgba(0,0,0,.6),
-        inset 0 0 0 4px rgba(0,0,0,.25);
+        0 14px 0 #451a03,
+        0 20px 28px rgba(0,0,0,.75),
+        inset 0 14px 18px rgba(255,255,255,.45),
+        inset 0 -16px 20px rgba(0,0,0,.45),
+        inset 0 0 0 3px rgba(180,83,9,.55);
       overflow: hidden;
-      image-rendering: pixelated;
-      image-rendering: crisp-edges;
     }
 
     .coin-face::before {
@@ -416,16 +393,18 @@
       position: absolute;
       left: 50%;
       top: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%, -54%);
       z-index: 2;
       font-family: var(--font-display);
-      font-size: 3.9rem;
+      font-size: 5.2rem;
       line-height: 1;
-      display: grid;
-      place-items: center;
       width: 100%;
       text-align: center;
       pointer-events: none;
+      font-weight: 700;
+      text-shadow:
+        0 3px 0 rgba(0,0,0,.35),
+        0 1px 0 rgba(255,255,255,.35);
     }
 
     .coin-heads {
@@ -1155,26 +1134,6 @@
     body.light .admin-field input[type="number"], body.light .admin-field input[type="text"] { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
 
 
-    /* Pixel-art 3D coin polish */
-    .coin-heads, .coin-tails {
-      background-size: 12px 12px !important;
-      image-rendering: pixelated;
-    }
-    .coin-symbol {
-      image-rendering: pixelated;
-      text-shadow:
-        3px 0 0 rgba(0,0,0,.35),
-        -2px 3px 0 rgba(0,0,0,.45),
-        0 4px 0 rgba(0,0,0,.25) !important;
-      filter: contrast(1.2);
-    }
-    .coin-shadow {
-      width: 120px !important;
-      height: 22px !important;
-      background: radial-gradient(ellipse, rgba(0,0,0,.55), transparent 70%) !important;
-      filter: blur(0px);
-      image-rendering: pixelated;
-    }
 
     .achievements-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 8px; }
     .achievement-badge {
