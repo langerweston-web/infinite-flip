@@ -2840,10 +2840,9 @@
       totalFlips++;
 
       setTimeout(() => {
-        let bestImproved = false;
         if (isWin) {
           steps++;
-          if (steps > best) { best = steps; bestImproved = true; }
+          if (steps > best) best = steps;
           totalWins++;
           comboCount++;
           if (comboCount > maxCombo) maxCombo = comboCount;
@@ -2892,7 +2891,6 @@
         updateTitleDisplay();
         updateUI();
         saveGame();
-        if (bestImproved)
         setTimeout(() => {
           flipping = false;
           flipBtn.disabled = false;
@@ -3256,12 +3254,11 @@
           const isWin = Math.random() < chance;
           if (isWin) {
             steps++;
-            let bestImproved = false;
-            if (steps > best) { best = steps; bestImproved = true; }
+            if (steps > best) best = steps;
             totalWins++;
             comboCount++;
             if (comboCount > maxCombo) maxCombo = comboCount;
-            if (bestImproved)            const comboMultiplier = getComboMultiplier();
+            const comboMultiplier = getComboMultiplier();
             let gain = Math.max(1, Math.floor((pointMultiplier + extraCoins) * currentStepBonusMultiplier() * (1 + rebirths * 0.1) * comboMultiplier));
             points += gain;
             totalPointsEarned += gain;
