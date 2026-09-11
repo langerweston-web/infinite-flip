@@ -28,3 +28,21 @@ You can also open `public/index.html` directly in a browser — the game is full
 - **Crit** — max at 100%
 - **Auto flip** — max at 5
 - **Extra coins** — shown as gold pips under the main coin
+
+## Scoreboard
+
+Local + shared leaderboards for best streak, total points earned, and total wins.
+
+- **In-game:** open **SCOREBOARD** (header, near STATS). Edit your display name (default `PLAYER`), then **SUBMIT SCORE**. Scores are stored in `localStorage` so GitHub Pages works offline.
+- **Tabs:** **LOCAL** always works in the browser. **GLOBAL** appears when the Node server API is reachable; if fetch fails (e.g. static Pages host), the UI stays on local without errors.
+- **Auto-submit:** when your best streak improves, on rebirth, and when leaving the page (local upsert; global via `sendBeacon` when available).
+
+### API (Node server)
+
+| Method | Path | Body / response |
+|--------|------|-----------------|
+| `GET` | `/api/scoreboard` | `{ "entries": [ { name, best, totalPoints, totalWins, updatedAt } ] }` (top ~20) |
+| `POST` | `/api/scoreboard` | `{ "name", "best", "totalPoints", "totalWins" }` — validated/sanitized; absurd values rejected |
+
+Entries are kept in memory and persisted to `data/scoreboard.json` across restarts.
+
