@@ -32,8 +32,73 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     /* Icons are intentionally local: no third-party font or CDN is loaded. */
-    i.ti { display: inline-block; font-style: normal; }
+    /* Distinct icons next to UI labels (emoji / symbols) */
+    i.ti { display: inline-grid; place-items: center; font-style: normal; line-height: 1; vertical-align: -0.1em; }
     i.ti::before { content: "◆"; }
+    i.ti.ti-arrow-left::before { content: "←"; }
+    i.ti.ti-bolt::before { content: "⚡"; }
+    i.ti.ti-brush::before { content: "🖌️"; }
+    i.ti.ti-cards::before { content: "🃏"; }
+    i.ti.ti-chart-bar::before { content: "📊"; }
+    i.ti.ti-chart-line::before { content: "📈"; }
+    i.ti.ti-clipboard::before { content: "📋"; }
+    i.ti.ti-clipboard-text::before { content: "📋"; }
+    i.ti.ti-clock::before { content: "⏰"; }
+    i.ti.ti-coin::before { content: "🪙"; }
+    i.ti.ti-coins::before { content: "🪙"; }
+    i.ti.ti-crown::before { content: "👑"; }
+    i.ti.ti-device-floppy::before { content: "💾"; }
+    i.ti.ti-device-gamepad::before { content: "🕹️"; }
+    i.ti.ti-diamond::before { content: "💎"; }
+    i.ti.ti-dice::before { content: "🎲"; }
+    i.ti.ti-download::before { content: "⬇️"; }
+    i.ti.ti-dungeon::before { content: "🏰"; }
+    i.ti.ti-file-download::before { content: "📥"; }
+    i.ti.ti-flag::before { content: "🚩"; }
+    i.ti.ti-flame::before { content: "🔥"; }
+    i.ti.ti-flame-filled::before { content: "🔥"; }
+    i.ti.ti-gamepad::before { content: "🎮"; }
+    i.ti.ti-ghost::before { content: "👻"; }
+    i.ti.ti-gift::before { content: "🎁"; }
+    i.ti.ti-hand-stop::before { content: "✋"; }
+    i.ti.ti-hexagon::before { content: "⬡"; }
+    i.ti.ti-key::before { content: "🔑"; }
+    i.ti.ti-list-numbers::before { content: "🔢"; }
+    i.ti.ti-lock::before { content: "🔒"; }
+    i.ti.ti-map::before { content: "🗺️"; }
+    i.ti.ti-math-function-y::before { content: "∑"; }
+    i.ti.ti-medal::before { content: "🏅"; }
+    i.ti.ti-moon::before { content: "🌙"; }
+    i.ti.ti-package::before { content: "📦"; }
+    i.ti.ti-plus::before { content: "➕"; }
+    i.ti.ti-pointer::before { content: "👆"; }
+    i.ti.ti-radar::before { content: "📡"; }
+    i.ti.ti-refresh::before { content: "🔄"; }
+    i.ti.ti-reload::before { content: "🔃"; }
+    i.ti.ti-robot::before { content: "🤖"; }
+    i.ti.ti-shield-check::before { content: "🛡️"; }
+    i.ti.ti-sitemap::before { content: "🌳"; }
+    i.ti.ti-skull::before { content: "💀"; }
+    i.ti.ti-sparkles::before { content: "✨"; }
+    i.ti.ti-stack-2::before { content: "📚"; }
+    i.ti.ti-star::before { content: "⭐"; }
+    i.ti.ti-star-filled::before { content: "🌟"; }
+    i.ti.ti-sun::before { content: "☀️"; }
+    i.ti.ti-sword::before { content: "🗡️"; }
+    i.ti.ti-swords::before { content: "⚔️"; }
+    i.ti.ti-target::before { content: "🎯"; }
+    i.ti.ti-trash::before { content: "🗑️"; }
+    i.ti.ti-trophy::before { content: "🏆"; }
+    i.ti.ti-upload::before { content: "⬆️"; }
+    i.ti.ti-volume::before { content: "🔊"; }
+    i.ti.ti-volume-off::before { content: "🔇"; }
+    i.ti.ti-wallet::before { content: "👛"; }
+    i.ti.ti-wheel::before { content: "🎡"; }
+    i.ti.ti-x::before { content: "✕"; }
+
+    .btn i.ti, .flip-btn i.ti, .shop-icon i.ti, .ach-icon i.ti { margin-right: 0.25em; }
+    .shop-icon i.ti, .ach-icon i.ti, .brand-mark i.ti { margin-right: 0; font-size: 1em; }
+
 
     body {
       min-height: 100vh;
