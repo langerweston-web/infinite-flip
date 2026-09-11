@@ -3,30 +3,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Infinite Flip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <style>
     :root {
-      --font-display: "Courier New", monospace;
-      --font-body: "Courier New", monospace;
-      --bg: #1a1a2e;
-      --panel: #16213e;
-      --panel-2: #0f3460;
-      --panel-3: #1f4068;
-      --line: #53354a;
-      --text: #e0f2fe;
-      --muted: #a5b4fc;
-      --dim: #64748b;
-      --gold-1: #facc15;
-      --gold-2: #eab308;
-      --gold-3: #ca8a04;
-      --green: #22c55e;
-      --red: #ef4444;
-      --blue: #60a5fa;
-      --violet: #c084fc;
-      --orange: #fb923c;
-      --shadow: 0 28px 70px rgba(0,0,0,.65);
-      --radius-xl: 12px;
-      --radius-lg: 8px;
-      --radius-md: 6px;
+      /* Scritchy Scratchy–inspired cozy scratch-ticket / desk vibe */
+      --font-display: "Press Start 2P", "Courier New", monospace;
+      --font-body: "VT323", "Courier New", monospace;
+      --bg: #3a2718;
+      --desk: #6b4423;
+      --panel: #fff6dc;
+      --panel-2: #ffe7a8;
+      --panel-3: #ffd56b;
+      --line: #1a120b;
+      --text: #24160f;
+      --muted: #7a5a3a;
+      --dim: #a07850;
+      --gold-1: #f0b429;
+      --gold-2: #d4920e;
+      --gold-3: #a66b00;
+      --green: #2faa5a;
+      --red: #e23d4a;
+      --blue: #3b9ae1;
+      --violet: #c45ad4;
+      --orange: #ff7a3d;
+      --pink: #ff5c8a;
+      --teal: #2ec4b6;
+      --foil: #c0c7d1;
+      --shadow: 4px 6px 0 #1a120b;
+      --radius-xl: 4px;
+      --radius-lg: 3px;
+      --radius-md: 2px;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -42,9 +50,19 @@
       padding: 18px;
       color: var(--text);
       font-family: var(--font-body);
+      font-size: 1.15rem;
+      letter-spacing: 0.02em;
       background:
-        linear-gradient(#1a1a2e, #0f172a),
-        repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(234,179,8,0.03) 20px, rgba(234,179,8,0.03) 40px);
+        radial-gradient(ellipse at 30% 20%, rgba(255,214,102,.18), transparent 50%),
+        radial-gradient(ellipse at 80% 70%, rgba(255,92,138,.12), transparent 45%),
+        repeating-linear-gradient(
+          90deg,
+          #5a3a22 0px,
+          #5a3a22 14px,
+          #634126 14px,
+          #634126 28px
+        ),
+        linear-gradient(180deg, #4a2f1a, #2e1c10);
       image-rendering: pixelated;
       image-rendering: crisp-edges;
     }
@@ -57,15 +75,36 @@
     .game,
     .admin-page {
       width: 100%;
-      background: var(--panel);
-      border: 4px solid var(--line);
-      border-image: linear-gradient(to bottom, #facc15, #ca8a04) 1;
+      background:
+        linear-gradient(180deg, #fffaf0 0%, #fff6dc 55%, #ffe9b5 100%);
+      border: 5px solid var(--line);
       border-radius: var(--radius-xl);
       overflow: hidden;
-      box-shadow: var(--shadow);
+      box-shadow:
+        0 0 0 3px #f0b429,
+        6px 8px 0 #1a120b,
+        0 24px 50px rgba(0,0,0,.35);
       animation: revealUp .7s ease both;
       position: relative;
     }
+    .game::before {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 3px,
+          rgba(26,18,11,.03) 3px,
+          rgba(26,18,11,.03) 4px
+        );
+      z-index: 0;
+      opacity: .55;
+    }
+    .game > *,
+    .admin-page > * { position: relative; z-index: 1; }
 
     .admin-page { display: none; }
     .admin-page.active { display: block; }
@@ -76,9 +115,10 @@
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      padding: 22px 24px;
-      border-bottom: 4px solid var(--line);
-      background: linear-gradient(135deg, #1e2937, #334155);
+      padding: 18px 20px;
+      border-bottom: 5px solid var(--line);
+      background:
+        linear-gradient(180deg, #ffd56b 0%, #ffbf3c 100%);
     }
 
     .brand {
@@ -90,13 +130,13 @@
     .brand-mark {
       width: 52px;
       height: 52px;
-      border: 4px solid #facc15;
-      border-radius: 4px;
+      border: 4px solid var(--line);
+      border-radius: 2px;
       display: grid;
       place-items: center;
-      color: #1e2937;
-      background: #ca8a04;
-      box-shadow: inset 0 4px 0 #facc15, 0 6px 0 #854d0e;
+      color: #fff8e7;
+      background: linear-gradient(145deg, #ff5c8a, #e23d4a);
+      box-shadow: inset 0 3px 0 rgba(255,255,255,.35), 4px 4px 0 #1a120b;
       flex: none;
       font-size: 28px;
     }
@@ -108,7 +148,7 @@
       line-height: 1.1;
       letter-spacing: -0.02em;
       font-weight: 400;
-      text-shadow: 2px 2px 0 #000;
+      text-shadow: 3px 3px 0 #fff6dc, 5px 5px 0 #1a120b;
     }
 
     .brand p,
@@ -1554,6 +1594,128 @@
     }
     .scoreboard-status.ok { color: var(--green); }
     .scoreboard-status.err { color: var(--red, #f87171); }
+
+    /* ===== Scritchy-inspired UI polish ===== */
+    .btn, .flip-btn, .mini-tab-btn, .shop-card, .stat-card, .skill-node {
+      border: 3px solid var(--line) !important;
+      border-radius: 2px !important;
+      box-shadow: 3px 3px 0 #1a120b !important;
+    }
+    .btn, .mini-tab-btn {
+      background: linear-gradient(180deg, #fff1c2, #ffd56b) !important;
+      color: var(--text) !important;
+      font-family: var(--font-body) !important;
+      font-size: 1.05rem !important;
+      text-transform: uppercase;
+    }
+    .btn:hover, .mini-tab-btn:hover {
+      background: linear-gradient(180deg, #ffe08a, #ffbf3c) !important;
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #1a120b !important;
+    }
+    .flip-btn {
+      background: linear-gradient(180deg, #ff7eb6, #ff5c8a) !important;
+      color: #fff !important;
+      font-family: var(--font-display) !important;
+      font-size: .72rem !important;
+      letter-spacing: .04em;
+      text-shadow: 2px 2px 0 #1a120b;
+      border-width: 4px !important;
+    }
+    .flip-btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, #ff9ec8, #ff5c8a) !important;
+    }
+    .stat-card, .shop-card {
+      background: linear-gradient(180deg, #fffaf0, #ffe7a8) !important;
+    }
+    .shop-card:hover { border-color: var(--pink) !important; }
+    .shop-cost { color: #a66b00 !important; font-family: var(--font-display) !important; font-size: .55rem !important; }
+    .shop-title { font-family: var(--font-display) !important; font-size: .55rem !important; }
+    .panel-title {
+      font-family: var(--font-display) !important;
+      font-size: .7rem !important;
+      color: var(--text) !important;
+      text-shadow: 2px 2px 0 #fff6dc;
+    }
+    .stat-num {
+      font-family: var(--font-display) !important;
+      color: #c45a00 !important;
+      text-shadow: 2px 2px 0 #fff6dc;
+    }
+    .stat-label { color: var(--muted) !important; font-family: var(--font-display) !important; font-size: .45rem !important; }
+    .coin-arena {
+      background:
+        radial-gradient(circle at 50% 30%, rgba(255,255,255,.55), transparent 55%),
+        linear-gradient(180deg, #ffe7a8, #f0c14a) !important;
+      border: 4px solid var(--line) !important;
+      box-shadow: inset 0 0 0 3px rgba(255,255,255,.35), 4px 4px 0 #1a120b !important;
+    }
+    .outcome {
+      font-family: var(--font-display) !important;
+      font-size: .7rem !important;
+      color: var(--text) !important;
+      text-shadow: 2px 2px 0 #fff6dc;
+    }
+    .outcome.win { color: #1f7a3a !important; }
+    .outcome.lose { color: #b91c1c !important; }
+    .subtext { color: var(--muted) !important; font-size: 1.05rem !important; }
+    .right, .left {
+      background: transparent !important;
+    }
+    .layout {
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 8px,
+          rgba(255,92,138,.04) 8px,
+          rgba(255,92,138,.04) 16px
+        );
+    }
+    .stars-pill, .status-row strong {
+      color: #a66b00 !important;
+    }
+    body.light {
+      background:
+        repeating-linear-gradient(90deg, #c49a6c 0px, #c49a6c 14px, #d2a97a 14px, #d2a97a 28px),
+        #b8895a !important;
+    }
+    body.light .game, body.light .admin-page {
+      background: #fffaf0 !important;
+    }
+    body.light .stat-card, body.light .shop-card, body.light .skill-node,
+    body.light .boss-card, body.light .fighter-panel {
+      background: #fff6dc !important;
+      border-color: #1a120b !important;
+    }
+    body.light .stat-label, body.light .panel-title, body.light .subtext,
+    body.light .footer-note, body.light .status-row, body.light .shop-desc,
+    body.light .skill-node-desc, body.light .boss-card-hp, body.light .hp-text,
+    body.light .skill-node-lvl, body.light .boss-card-name, body.light .fighter-name,
+    body.light .skill-node-title, body.light .shop-title {
+      color: #5c4033 !important;
+    }
+    body.light .stat-num, body.light .brand h1, body.light .admin-topbar h2,
+    body.light .outcome, body.light .coin-symbol {
+      color: #24160f !important;
+    }
+    .shop-card.maxed {
+      background: linear-gradient(180deg, #e8f8ee, #b8e6c8) !important;
+    }
+    .extra-coin-pip {
+      border-color: #1a120b !important;
+      box-shadow: 2px 2px 0 #1a120b !important;
+    }
+    .scoreboard-table th {
+      background: #ffd56b !important;
+      color: #24160f !important;
+      font-family: var(--font-display) !important;
+      font-size: .45rem !important;
+    }
+    .admin-page {
+      background: #fff6dc !important;
+    }
+
   </style>
 </head>
 <body>
