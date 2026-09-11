@@ -1504,6 +1504,56 @@
     body.light .dungeon-tile, body.light .arena-enemy, body.light .bj-card,
     body.light .slot-symbol, body.light .roulette-cell, body.light .training-boost,
     body.light .treasure-tile { background: #f8fafc; }
+
+    /* ===== SCOREBOARD ===== */
+    .scoreboard-tabs { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .scoreboard-table-wrap {
+      overflow-x: auto; border: 3px solid var(--line); border-radius: var(--radius-md);
+      box-shadow: 0 4px 0 #000; background: #1e2937;
+    }
+    body.light .scoreboard-table-wrap { background: #f8fafc; }
+    .scoreboard-table {
+      width: 100%; border-collapse: collapse; font-size: .65rem; min-width: 480px;
+    }
+    .scoreboard-table th,
+    .scoreboard-table td {
+      padding: 10px 12px; text-align: left; border-bottom: 2px solid var(--line);
+    }
+    .scoreboard-table th {
+      font-size: .55rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--muted); background: #0f172a;
+    }
+    body.light .scoreboard-table th { background: #e2e8f0; }
+    .scoreboard-table tr:last-child td { border-bottom: none; }
+    .scoreboard-table .rank { color: var(--gold-1); font-family: var(--font-display); width: 48px; }
+    .scoreboard-table .name-cell { color: var(--text); font-weight: 700; letter-spacing: .04em; }
+    .scoreboard-table .num-best { color: var(--gold-1); font-family: var(--font-display); }
+    .scoreboard-table .num-pts { color: var(--blue); font-family: var(--font-display); }
+    .scoreboard-table .num-wins { color: var(--green); font-family: var(--font-display); }
+    .scoreboard-empty {
+      text-align: center; color: var(--muted); padding: 28px 12px; font-size: .7rem;
+    }
+    .scoreboard-controls {
+      display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+      margin: 16px 0 12px; padding: 14px; background: #1e2937;
+      border: 3px solid var(--line); border-radius: var(--radius-md); box-shadow: 0 4px 0 #000;
+    }
+    body.light .scoreboard-controls { background: #f8fafc; }
+    .scoreboard-controls label {
+      font-size: .55rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .scoreboard-controls input[type="text"] {
+      font: inherit; font-size: .75rem; padding: 10px 12px; min-width: 140px;
+      border: 3px solid var(--line); border-radius: 4px; background: #0f172a; color: var(--text);
+      text-transform: uppercase; letter-spacing: .06em;
+    }
+    body.light .scoreboard-controls input[type="text"] { background: #fff; }
+    .scoreboard-status {
+      font-size: .6rem; color: var(--muted); min-height: 1.2em; margin-top: 8px;
+    }
+    .scoreboard-status.ok { color: var(--green); }
+    .scoreboard-status.err { color: var(--red, #f87171); }
   </style>
 </head>
 <body>
@@ -1534,6 +1584,7 @@
           <button class="btn" id="trainingBtn" type="button"><i class="ti ti-sword"></i><span>TRAINING</span></button>
           <button class="btn" id="treasureMapBtn" type="button"><i class="ti ti-map"></i><span>MAP</span></button>
           <button class="btn" id="statsBtn" type="button"><i class="ti ti-chart-bar"></i><span>STATS</span></button>
+          <button class="btn" id="scoreboardBtn" type="button"><i class="ti ti-list-numbers"></i><span>SCOREBOARD</span></button>
           <button class="btn" id="themeToggleBtn" type="button"><i class="ti ti-sun" id="themeIcon"></i></button>
           <button class="btn" id="downloadSelfBtn" type="button"><i class="ti ti-download"></i><span>DOWNLOAD ROM</span></button>
           <button class="btn" id="adminLoginBtn" type="button"><i class="ti ti-lock"></i><span>ADMIN</span></button>
@@ -2067,6 +2118,41 @@
       </div>
     </section>
 
+    <section class="admin-page" id="scoreboardPage" aria-label="Scoreboard page">
+      <header class="admin-topbar">
+        <div>
+          <h2>SCOREBOARD</h2>
+          <p>TOP STREAKS • THIS BROWSER</p>
+        </div>
+        <button class="admin-btn" id="backFromScoreboardBtn" type="button"><i class="ti ti-arrow-left"></i> BACK</button>
+      </header>
+      <div class="admin-body">
+<div class="scoreboard-controls">
+          <label>DISPLAY NAME
+            <input type="text" id="scoreboardNameInput" maxlength="16" placeholder="PLAYER" autocomplete="off" spellcheck="false" />
+          </label>
+          <button class="btn" id="scoreboardSubmitBtn" type="button"><i class="ti ti-upload"></i><span>SUBMIT SCORE</span></button>
+          <button class="btn" id="scoreboardRefreshBtn" type="button"><i class="ti ti-refresh"></i><span>REFRESH</span></button>
+        </div>
+        <div class="scoreboard-status" id="scoreboardStatus"></div>
+        <div class="scoreboard-table-wrap">
+          <table class="scoreboard-table" id="scoreboardTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>NAME</th>
+                <th>BEST</th>
+                <th>POINTS</th>
+                <th>WINS</th>
+              </tr>
+            </thead>
+            <tbody id="scoreboardBody"></tbody>
+          </table>
+          <div class="scoreboard-empty" id="scoreboardEmpty" hidden>NO SCORES YET — FLIP TO CLIMB THE BOARD!</div>
+        </div>
+      </div>
+    </section>
+
     <div class="daily-popup-overlay" id="dailyPopup">
       <div class="daily-popup">
         <h3>DAILY REWARD!</h3>
@@ -2292,6 +2378,14 @@
     let unlockedAchievements = {};
     let sessionStart = Date.now();
     let timePlayed = 0;
+    let scoreboardDisplayName = "PLAYER";
+    let scoreboardTab = "local";
+    let globalScoreboardCache = null;
+    let globalScoreboardAvailable = null; // null=unknown, true/false
+    let lastSubmittedSnapshot = "";
+    const SCOREBOARD_LOCAL_KEY = "infiniteFlip_scoreboard_v1";
+    const SCOREBOARD_NAME_KEY = "infiniteFlip_scoreboardName_v1";
+    const SCOREBOARD_LOCAL_CAP = 20;
 
     const ACHIEVEMENTS = [
       { id: "firstWin", name: "FIRST WIN", desc: "Win your first flip", icon: "ti ti-trophy" },
@@ -2762,9 +2856,10 @@
       totalFlips++;
 
       setTimeout(() => {
+        let bestImproved = false;
         if (isWin) {
           steps++;
-          if (steps > best) best = steps;
+          if (steps > best) { best = steps; bestImproved = true; }
           totalWins++;
           comboCount++;
           if (comboCount > maxCombo) maxCombo = comboCount;
@@ -2813,6 +2908,7 @@
         updateTitleDisplay();
         updateUI();
         saveGame();
+        if (bestImproved) maybeAutoSubmitScore("best");
 
         setTimeout(() => {
           flipping = false;
@@ -3163,6 +3259,7 @@
       updateSkillTreeUI();
       startAutoFlips();
       saveGame();
+      maybeAutoSubmitScore("rebirth");
     }
 
     let autoInterval = null;
@@ -3177,10 +3274,12 @@
           const isWin = Math.random() < chance;
           if (isWin) {
             steps++;
-            if (steps > best) best = steps;
+            let bestImproved = false;
+            if (steps > best) { best = steps; bestImproved = true; }
             totalWins++;
             comboCount++;
             if (comboCount > maxCombo) maxCombo = comboCount;
+            if (bestImproved) maybeAutoSubmitScore("best");
             const comboMultiplier = getComboMultiplier();
             let gain = Math.max(1, Math.floor((pointMultiplier + extraCoins) * currentStepBonusMultiplier() * (1 + rebirths * 0.1) * comboMultiplier));
             points += gain;
@@ -3660,6 +3759,219 @@
         div.append(label, value);
         grid.appendChild(div);
       });
+    }
+
+
+    function loadScoreboardName() {
+      try {
+        const n = localStorage.getItem(SCOREBOARD_NAME_KEY);
+        if (n && typeof n === "string") scoreboardDisplayName = sanitizeScoreboardName(n);
+      } catch (e) {}
+      const input = document.getElementById("scoreboardNameInput");
+      if (input) input.value = scoreboardDisplayName;
+    }
+
+    function sanitizeScoreboardName(name) {
+      const cleaned = String(name || "")
+        .replace(/[^\w\s\-_.!]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 16)
+        .toUpperCase();
+      return cleaned || "PLAYER";
+    }
+
+    function persistScoreboardName() {
+      const input = document.getElementById("scoreboardNameInput");
+      if (input) scoreboardDisplayName = sanitizeScoreboardName(input.value);
+      else scoreboardDisplayName = sanitizeScoreboardName(scoreboardDisplayName);
+      try { localStorage.setItem(SCOREBOARD_NAME_KEY, scoreboardDisplayName); } catch (e) {}
+      if (input) input.value = scoreboardDisplayName;
+      return scoreboardDisplayName;
+    }
+
+    function readLocalScoreboard() {
+      try {
+        const raw = localStorage.getItem(SCOREBOARD_LOCAL_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        return parsed
+          .filter((e) => e && typeof e === "object")
+          .map((e) => ({
+            name: sanitizeScoreboardName(e.name),
+            best: Math.max(0, Math.floor(Number(e.best) || 0)),
+            totalPoints: Math.max(0, Math.floor(Number(e.totalPoints) || 0)),
+            totalWins: Math.max(0, Math.floor(Number(e.totalWins) || 0)),
+            updatedAt: typeof e.updatedAt === "string" ? e.updatedAt : new Date().toISOString()
+          }))
+          .sort(compareScoreboardEntries)
+          .slice(0, SCOREBOARD_LOCAL_CAP);
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function writeLocalScoreboard(entries) {
+      try {
+        localStorage.setItem(SCOREBOARD_LOCAL_KEY, JSON.stringify(entries.slice(0, SCOREBOARD_LOCAL_CAP)));
+      } catch (e) {}
+    }
+
+    function compareScoreboardEntries(a, b) {
+      if (b.best !== a.best) return b.best - a.best;
+      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+      if (b.totalWins !== a.totalWins) return b.totalWins - a.totalWins;
+      return String(a.name).localeCompare(String(b.name));
+    }
+
+    function currentScorePayload() {
+      return {
+        name: persistScoreboardName(),
+        best: Math.max(0, Math.floor(best || 0)),
+        totalPoints: Math.max(0, Math.floor(totalPointsEarned || 0)),
+        totalWins: Math.max(0, Math.floor(totalWins || 0))
+      };
+    }
+
+    function scoreSnapshot(payload) {
+      return [payload.name, payload.best, payload.totalPoints, payload.totalWins].join("|");
+    }
+
+    function upsertLocalScore(payload) {
+      if (!payload || (payload.best <= 0 && payload.totalWins <= 0 && payload.totalPoints <= 0)) return false;
+      const entries = readLocalScoreboard();
+      const idx = entries.findIndex((e) => e.name.toLowerCase() === payload.name.toLowerCase());
+      const next = {
+        name: payload.name,
+        best: payload.best,
+        totalPoints: payload.totalPoints,
+        totalWins: payload.totalWins,
+        updatedAt: new Date().toISOString()
+      };
+      if (idx >= 0) {
+        const prev = entries[idx];
+        entries[idx] = {
+          name: next.name,
+          best: Math.max(prev.best, next.best),
+          totalPoints: Math.max(prev.totalPoints, next.totalPoints),
+          totalWins: Math.max(prev.totalWins, next.totalWins),
+          updatedAt: next.updatedAt
+        };
+      } else {
+        entries.push(next);
+      }
+      entries.sort(compareScoreboardEntries);
+      writeLocalScoreboard(entries);
+      return true;
+    }
+
+    function setScoreboardStatus(msg, kind) {
+      const el = document.getElementById("scoreboardStatus");
+      if (!el) return;
+      el.textContent = msg || "";
+      el.className = "scoreboard-status" + (kind ? " " + kind : "");
+    }
+
+    function renderScoreboardRows(entries) {
+      const body = document.getElementById("scoreboardBody");
+      const empty = document.getElementById("scoreboardEmpty");
+      if (!body) return;
+      body.replaceChildren();
+      if (!entries || !entries.length) {
+        if (empty) empty.hidden = false;
+        return;
+      }
+      if (empty) empty.hidden = true;
+      entries.forEach((e, i) => {
+        const tr = document.createElement("tr");
+        const cells = [
+          { cls: "rank", text: String(i + 1) },
+          { cls: "name-cell", text: e.name },
+          { cls: "num-best", text: String(e.best) },
+          { cls: "num-pts", text: formatPoints(e.totalPoints) },
+          { cls: "num-wins", text: String(e.totalWins) }
+        ];
+        cells.forEach((c) => {
+          const td = document.createElement("td");
+          td.className = c.cls;
+          td.textContent = c.text;
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+    }
+
+    async function fetchGlobalScoreboard(force) {
+      return null;
+    }
+
+    async function postGlobalScore(payload) {
+      return false;
+    }
+
+    async function submitScoreboard(opts) {
+      const options = opts || {};
+      const payload = currentScorePayload();
+      const snap = scoreSnapshot(payload);
+      if (options.onlyIfImproved && snap === lastSubmittedSnapshot) return false;
+      if (payload.best <= 0 && payload.totalWins <= 0 && payload.totalPoints <= 0) {
+        if (!options.silent) setScoreboardStatus("NOTHING TO SUBMIT YET — KEEP FLIPPING!", "err");
+        return false;
+      }
+      upsertLocalScore(payload);
+      lastSubmittedSnapshot = snap;
+      if (!options.silent) {
+        setScoreboardStatus("SCORE SAVED!", "ok");
+      }
+      const sbPage = document.getElementById("scoreboardPage");
+      if (sbPage && sbPage.classList.contains("active")) {
+        await renderScoreboardPage();
+      }
+      return true;
+    }
+
+    async function maybeAutoSubmitScore(reason) {
+      // Auto-submit on meaningful progress: best streak rose, rebirth, or save/close
+      const payload = currentScorePayload();
+      if (payload.best <= 0 && payload.totalWins <= 0 && payload.totalPoints <= 0) return;
+      const snap = scoreSnapshot(payload);
+      if (snap === lastSubmittedSnapshot && reason !== "force") return;
+      await submitScoreboard({ silent: true, onlyIfImproved: reason !== "force" });
+    }
+
+    async function renderScoreboardPage() {
+      scoreboardTab = "local";
+      renderScoreboardRows(readLocalScoreboard());
+      const stEl = document.getElementById("scoreboardStatus");
+      if (stEl && !stEl.textContent) {
+        setScoreboardStatus("SCORES ON THIS BROWSER", "");
+      }
+    }
+
+    async function openScoreboardPage() {
+      sfxClick();
+      loadScoreboardName();
+      scoreboardTab = "local";
+      setScoreboardStatus("", "");
+      gamePage.classList.add("hidden");
+      document.getElementById("scoreboardPage").classList.add("active");
+      // Probe global in background; keep local as default
+      fetchGlobalScoreboard(true).then(() => {
+        if (globalScoreboardAvailable) {
+          const hint = document.getElementById("scoreboardStatus");
+          if (hint && !hint.textContent) setScoreboardStatus("GLOBAL API ONLINE — SWITCH TABS TO VIEW", "ok");
+        }
+      });
+      await renderScoreboardPage();
+    }
+
+    function closeScoreboardPage() {
+      sfxClick();
+      persistScoreboardName();
+      document.getElementById("scoreboardPage").classList.remove("active");
+      gamePage.classList.remove("hidden");
+      setOutcome("BACK TO GAME", "win");
     }
 
     function openStatsPage() {
@@ -4565,6 +4877,17 @@
 
     if (statsBtn) statsBtn.addEventListener("click", openStatsPage);
     if (backFromStatsBtn) backFromStatsBtn.addEventListener("click", closeStatsPage);
+
+    const scoreboardBtn = document.getElementById("scoreboardBtn");
+    const backFromScoreboardBtn = document.getElementById("backFromScoreboardBtn");
+    const scoreboardSubmitBtn = document.getElementById("scoreboardSubmitBtn");
+    const scoreboardRefreshBtn = document.getElementById("scoreboardRefreshBtn");
+    const scoreboardNameInput = document.getElementById("scoreboardNameInput");
+    if (scoreboardBtn) scoreboardBtn.addEventListener("click", openScoreboardPage);
+    if (backFromScoreboardBtn) backFromScoreboardBtn.addEventListener("click", closeScoreboardPage);
+    if (scoreboardSubmitBtn) scoreboardSubmitBtn.addEventListener("click", () => { sfxClick(); submitScoreboard({ silent: false, onlyIfImproved: false }); });
+    if (scoreboardRefreshBtn) scoreboardRefreshBtn.addEventListener("click", async () => { sfxClick(); setScoreboardStatus("REFRESHING...", ""); await renderScoreboardPage(); setScoreboardStatus("SCORES ON THIS BROWSER", ""); });
+    if (scoreboardNameInput) scoreboardNameInput.addEventListener("change", persistScoreboardName);
     if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
     if (bossRushBtn) bossRushBtn.addEventListener("click", startBossRush);
     if (exportSaveBtn) exportSaveBtn.addEventListener("click", exportSave);
@@ -5216,6 +5539,7 @@
     document.getElementById("treasureNewMapBtn").addEventListener("click", initTreasureMap);
 
     loadGame();
+    loadScoreboardName();
     document.body.classList.toggle("light", !darkMode);
     const themeIconEl = document.getElementById("themeIcon");
     if (themeIconEl) themeIconEl.className = darkMode ? "ti ti-sun" : "ti ti-moon";
@@ -5237,7 +5561,15 @@
 
     setInterval(() => { timePlayed++; }, 1000);
     setInterval(saveGame, 30000);
-    window.addEventListener("beforeunload", saveGame);
+    window.addEventListener("beforeunload", () => {
+      saveGame();
+      try {
+        const payload = currentScorePayload();
+        if (payload.best > 0 || payload.totalWins > 0 || payload.totalPoints > 0) {
+          upsertLocalScore(payload);
+        }
+      } catch (e) {}
+    });
 
     setTimeout(checkDailyReward, 500);
   </script>

@@ -2122,16 +2122,12 @@
       <header class="admin-topbar">
         <div>
           <h2>SCOREBOARD</h2>
-          <p>TOP STREAKS • LOCAL &amp; GLOBAL</p>
+          <p>TOP STREAKS • THIS BROWSER</p>
         </div>
         <button class="admin-btn" id="backFromScoreboardBtn" type="button"><i class="ti ti-arrow-left"></i> BACK</button>
       </header>
       <div class="admin-body">
-        <div class="scoreboard-tabs" role="tablist">
-          <button class="mini-tab-btn active" id="scoreboardTabLocal" type="button" role="tab" aria-selected="true">LOCAL</button>
-          <button class="mini-tab-btn" id="scoreboardTabGlobal" type="button" role="tab" aria-selected="false">GLOBAL</button>
-        </div>
-        <div class="scoreboard-controls">
+<div class="scoreboard-controls">
           <label>DISPLAY NAME
             <input type="text" id="scoreboardNameInput" maxlength="16" placeholder="PLAYER" autocomplete="off" spellcheck="false" />
           </label>
@@ -3907,54 +3903,11 @@
     }
 
     async function fetchGlobalScoreboard(force) {
-      if (globalScoreboardAvailable === false && !force) return null;
-      try {
-        const res = await fetch("/api/scoreboard", { method: "GET", headers: { "Accept": "application/json" } });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        const entries = Array.isArray(data.entries) ? data.entries : (Array.isArray(data) ? data : []);
-        globalScoreboardCache = entries.map((e) => ({
-          name: sanitizeScoreboardName(e.name),
-          best: Math.max(0, Math.floor(Number(e.best) || 0)),
-          totalPoints: Math.max(0, Math.floor(Number(e.totalPoints) || 0)),
-          totalWins: Math.max(0, Math.floor(Number(e.totalWins) || 0)),
-          updatedAt: typeof e.updatedAt === "string" ? e.updatedAt : ""
-        })).sort(compareScoreboardEntries);
-        globalScoreboardAvailable = true;
-        return globalScoreboardCache;
-      } catch (err) {
-        globalScoreboardAvailable = false;
-        globalScoreboardCache = null;
-        return null;
-      }
+      return null;
     }
 
     async function postGlobalScore(payload) {
-      if (globalScoreboardAvailable === false) return false;
-      try {
-        const res = await fetch("/api/scoreboard", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("HTTP " + res.status);
-        const data = await res.json();
-        if (Array.isArray(data.entries)) {
-          globalScoreboardCache = data.entries.map((e) => ({
-            name: sanitizeScoreboardName(e.name),
-            best: Math.max(0, Math.floor(Number(e.best) || 0)),
-            totalPoints: Math.max(0, Math.floor(Number(e.totalPoints) || 0)),
-            totalWins: Math.max(0, Math.floor(Number(e.totalWins) || 0)),
-            updatedAt: typeof e.updatedAt === "string" ? e.updatedAt : ""
-          })).sort(compareScoreboardEntries);
-        }
-        globalScoreboardAvailable = true;
-        return true;
-      } catch (err) {
-        // Silent for Pages / offline — local still works
-        if (globalScoreboardAvailable === null) globalScoreboardAvailable = false;
-        return false;
-      }
+      return false;
     }
 
     async function submitScoreboard(opts) {
@@ -3967,11 +3920,9 @@
         return false;
       }
       upsertLocalScore(payload);
-      const posted = await postGlobalScore(payload);
       lastSubmittedSnapshot = snap;
       if (!options.silent) {
-        if (posted) setScoreboardStatus("SCORE SAVED LOCALLY + GLOBAL!", "ok");
-        else setScoreboardStatus("SCORE SAVED LOCALLY" + (globalScoreboardAvailable === false ? " (GLOBAL UNAVAILABLE)" : ""), "ok");
+        setScoreboardStatus("SCORE SAVED!", "ok");
       }
       const sbPage = document.getElementById("scoreboardPage");
       if (sbPage && sbPage.classList.contains("active")) {
@@ -3990,36 +3941,11 @@
     }
 
     async function renderScoreboardPage() {
-      const localBtn = document.getElementById("scoreboardTabLocal");
-      const globalBtn = document.getElementById("scoreboardTabGlobal");
-      if (localBtn && globalBtn) {
-        localBtn.classList.toggle("active", scoreboardTab === "local");
-        globalBtn.classList.toggle("active", scoreboardTab === "global");
-        localBtn.setAttribute("aria-selected", scoreboardTab === "local" ? "true" : "false");
-        globalBtn.setAttribute("aria-selected", scoreboardTab === "global" ? "true" : "false");
-      }
-
-      if (scoreboardTab === "global") {
-        const entries = await fetchGlobalScoreboard(false);
-        if (entries) {
-          renderScoreboardRows(entries);
-          setScoreboardStatus("GLOBAL LEADERBOARD", "ok");
-        } else {
-          // Fall back to local without noisy errors (GitHub Pages)
-          scoreboardTab = "local";
-          if (localBtn && globalBtn) {
-            localBtn.classList.add("active");
-            globalBtn.classList.remove("active");
-          }
-          renderScoreboardRows(readLocalScoreboard());
-          setScoreboardStatus("GLOBAL UNAVAILABLE — SHOWING LOCAL", "err");
-        }
-      } else {
-        renderScoreboardRows(readLocalScoreboard());
-        const stEl = document.getElementById("scoreboardStatus");
-        if (stEl && !stEl.textContent) {
-          setScoreboardStatus("LOCAL SCORES (THIS BROWSER)", "");
-        }
+      scoreboardTab = "local";
+      renderScoreboardRows(readLocalScoreboard());
+      const stEl = document.getElementById("scoreboardStatus");
+      if (stEl && !stEl.textContent) {
+        setScoreboardStatus("SCORES ON THIS BROWSER", "");
       }
     }
 
@@ -4954,17 +4880,13 @@
 
     const scoreboardBtn = document.getElementById("scoreboardBtn");
     const backFromScoreboardBtn = document.getElementById("backFromScoreboardBtn");
-    const scoreboardTabLocal = document.getElementById("scoreboardTabLocal");
-    const scoreboardTabGlobal = document.getElementById("scoreboardTabGlobal");
     const scoreboardSubmitBtn = document.getElementById("scoreboardSubmitBtn");
     const scoreboardRefreshBtn = document.getElementById("scoreboardRefreshBtn");
     const scoreboardNameInput = document.getElementById("scoreboardNameInput");
     if (scoreboardBtn) scoreboardBtn.addEventListener("click", openScoreboardPage);
     if (backFromScoreboardBtn) backFromScoreboardBtn.addEventListener("click", closeScoreboardPage);
-    if (scoreboardTabLocal) scoreboardTabLocal.addEventListener("click", () => { sfxClick(); scoreboardTab = "local"; setScoreboardStatus("LOCAL SCORES (THIS BROWSER)", ""); renderScoreboardPage(); });
-    if (scoreboardTabGlobal) scoreboardTabGlobal.addEventListener("click", () => { sfxClick(); scoreboardTab = "global"; setScoreboardStatus("", ""); renderScoreboardPage(); });
     if (scoreboardSubmitBtn) scoreboardSubmitBtn.addEventListener("click", () => { sfxClick(); submitScoreboard({ silent: false, onlyIfImproved: false }); });
-    if (scoreboardRefreshBtn) scoreboardRefreshBtn.addEventListener("click", async () => { sfxClick(); setScoreboardStatus("REFRESHING...", ""); if (scoreboardTab === "global") await fetchGlobalScoreboard(true); await renderScoreboardPage(); });
+    if (scoreboardRefreshBtn) scoreboardRefreshBtn.addEventListener("click", async () => { sfxClick(); setScoreboardStatus("REFRESHING...", ""); await renderScoreboardPage(); setScoreboardStatus("SCORES ON THIS BROWSER", ""); });
     if (scoreboardNameInput) scoreboardNameInput.addEventListener("change", persistScoreboardName);
     if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
     if (bossRushBtn) bossRushBtn.addEventListener("click", startBossRush);
@@ -5641,15 +5563,10 @@
     setInterval(saveGame, 30000);
     window.addEventListener("beforeunload", () => {
       saveGame();
-      // Fire-and-forget local upsert; global POST may not finish on unload
       try {
         const payload = currentScorePayload();
         if (payload.best > 0 || payload.totalWins > 0 || payload.totalPoints > 0) {
           upsertLocalScore(payload);
-          if (navigator.sendBeacon && globalScoreboardAvailable !== false) {
-            const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
-            navigator.sendBeacon("/api/scoreboard", blob);
-          }
         }
       } catch (e) {}
     });
