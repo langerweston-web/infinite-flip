@@ -348,11 +348,19 @@
     }
 
     .coin-symbol {
-      position: relative;
-      z-index: 1;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
       font-family: var(--font-display);
       font-size: 3.9rem;
       line-height: 1;
+      display: grid;
+      place-items: center;
+      width: 100%;
+      text-align: center;
+      pointer-events: none;
     }
 
     .coin-heads {
@@ -1661,7 +1669,7 @@
             <div class="coin-stage">
               <div class="coin-container idle" id="coinContainer" tabindex="0" aria-label="Flip coin" style="--flip-duration: 1150ms;">
                 <div class="coin-face coin-heads" id="coinHeads" style="background: radial-gradient(circle at 32% 26%, rgb(254, 249, 195), rgb(250, 204, 21) 42%, rgb(180, 83, 9) 82%); border-color: rgb(120, 53, 15);"><span class="coin-symbol" style="color: rgb(146, 64, 14);">∞</span></div>
-                <div class="coin-face coin-tails" id="coinTails" style="background: radial-gradient(circle at 32% 26%, rgb(241, 245, 249), rgb(148, 163, 184) 46%, rgb(51, 65, 85) 84%); border-color: rgb(51, 65, 85);"><span class="coin-symbol" style="color: rgb(51, 65, 85);">★</span></div>
+                <div class="coin-face coin-tails" id="coinTails" style="background: radial-gradient(circle at 32% 26%, rgb(241, 245, 249), rgb(148, 163, 184) 46%, rgb(51, 65, 85) 84%); border-color: rgb(51, 65, 85);"><span class="coin-symbol" style="color: rgb(51, 65, 85);">∞</span></div>
               </div>
             </div>
             <div class="coin-shadow"></div>
@@ -2260,7 +2268,7 @@
         <div class="coin-stage" style="min-height:220px;">
           <div class="coin-container idle" id="streakCoinContainer" tabindex="0" aria-label="Streak flip" style="--flip-duration: 1150ms;">
             <div class="coin-face coin-heads"><span class="coin-symbol">∞</span></div>
-            <div class="coin-face coin-tails"><span class="coin-symbol">★</span></div>
+            <div class="coin-face coin-tails"><span class="coin-symbol">∞</span></div>
           </div>
         </div>
         <div class="coin-shadow"></div>
