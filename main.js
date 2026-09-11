@@ -12,6 +12,7 @@ function createWindow() {
     title: "Infinite Flip",
     backgroundColor: "#0f172a",
     autoHideMenuBar: true,
+    icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

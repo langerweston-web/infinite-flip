@@ -1,6 +1,6 @@
 {
   "name": "infinite-flip",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Infinite Flip desktop game",
   "main": "main.js",
   "author": "langerweston-web",
@@ -19,7 +19,9 @@
     "files": [
       "main.js",
       "index.html",
-      "infinite-flip.html"
+      "infinite-flip.html",
+      "build/icon.png",
+      "build/icon.ico"
     ],
     "win": {
       "target": [
@@ -30,8 +32,10 @@
           ]
         }
       ],
-      "signAndEditExecutable": false
-    }
+      "signAndEditExecutable": false,
+      "icon": "build/icon.ico"
+    },
+    "icon": "build/icon.png"
   },
   "devDependencies": {
     "electron": "^33.2.0",
