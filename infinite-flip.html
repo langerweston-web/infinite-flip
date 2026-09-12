@@ -2,7 +2,11 @@
 <html lang="en"><head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#1a1a2e">
   <title>Infinite Flip</title>
+  <!-- build: opera-compat-2026-09-12 -->
   <style>
     :root {
       --font-display: "Courier New", monospace;
@@ -1590,7 +1594,8 @@
       inset: 0;
       z-index: 200;
       place-items: center;
-      background: rgba(2, 6, 23, .78);
+      background: rgba(2, 6, 23, .88);
+      -webkit-backdrop-filter: blur(4px);
       backdrop-filter: blur(4px);
       padding: 18px;
     }
@@ -1671,6 +1676,18 @@
       font-weight: 700;
     }
 
+
+    /* opera / chromium click safety */
+    .btn, .flip-btn, .shop-card, .admin-btn, .mini-tab-btn, .save-slot-btn {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+    button, [tabindex="0"].shop-card { pointer-events: auto; }
   </style>
 </head>
 <body>
@@ -2431,6 +2448,24 @@
   </div>
 
   <script>
+
+    // Opera GX / Chromium: unlock audio + input on first gesture
+    (function operaCompatBoot() {
+      function unlock() {
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (AC) {
+            if (!window.__flipAudioCtx) window.__flipAudioCtx = new AC();
+            if (window.__flipAudioCtx.state === "suspended") window.__flipAudioCtx.resume();
+          }
+        } catch (e) {}
+        document.removeEventListener("pointerdown", unlock, true);
+        document.removeEventListener("keydown", unlock, true);
+      }
+      document.addEventListener("pointerdown", unlock, true);
+      document.addEventListener("keydown", unlock, true);
+    })();
+
     let points = 0;
     let steps = 0;
     let best = 0;
@@ -2646,8 +2681,12 @@
     function getAudioCtx() {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return null;
+      if (window.__flipAudioCtx) audioCtx = window.__flipAudioCtx;
       if (!audioCtx) audioCtx = new AC();
-      if (audioCtx.state === "suspended") audioCtx.resume();
+      window.__flipAudioCtx = audioCtx;
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume().catch(function () {});
+      }
       return audioCtx;
     }
 
