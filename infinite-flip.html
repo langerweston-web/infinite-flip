@@ -1924,14 +1924,10 @@
       <form class="admin-login-card" id="adminLoginForm" autocomplete="off">
         <div class="login-lock" aria-hidden="true"><i class="ti ti-lock"></i></div>
         <h3>ADMIN LOGIN</h3>
-        <p class="login-sub">ENTER CREDENTIALS TO OPEN THE CHEAT PANEL</p>
+        <p class="login-sub">ENTER USERNAME TO OPEN THE CHEAT PANEL</p>
         <div class="admin-login-field">
           <label for="adminUserInput">USERNAME</label>
-          <input id="adminUserInput" type="text" maxlength="40" placeholder="username" autocomplete="username" />
-        </div>
-        <div class="admin-login-field">
-          <label for="adminPassInput">PASSWORD</label>
-          <input id="adminPassInput" type="password" maxlength="40" placeholder="••••" autocomplete="current-password" />
+          <input id="adminUserInput" type="text" maxlength="40" placeholder="ISTHATABLACKCAT" autocomplete="username" />
         </div>
         <div class="admin-login-error" id="adminLoginError" role="alert"></div>
         <div class="admin-login-actions">
@@ -4612,11 +4608,9 @@
       const overlay = document.getElementById("adminLoginOverlay");
       const err = document.getElementById("adminLoginError");
       const user = document.getElementById("adminUserInput");
-      const pass = document.getElementById("adminPassInput");
       const card = document.getElementById("adminLoginForm");
       if (err) err.textContent = "";
       if (user) user.value = "";
-      if (pass) pass.value = "";
       if (card) card.classList.remove("shake");
       if (overlay) {
         overlay.classList.add("active");
@@ -4673,17 +4667,10 @@
     function tryAdminLogin(event) {
       if (event) event.preventDefault();
       const userEl = document.getElementById("adminUserInput");
-      const passEl = document.getElementById("adminPassInput");
       const err = document.getElementById("adminLoginError");
       const card = document.getElementById("adminLoginForm");
       const user = (userEl && userEl.value || "").trim();
-      const pass = (passEl && passEl.value || "").trim();
-      const combined = "/" + user + "/" + pass;
-      const ok =
-        (user === ADMIN_USER && pass === ADMIN_PASS) ||
-        combined === ADMIN_CODE ||
-        (user === "" && pass === ADMIN_CODE) ||
-        (user + pass === ADMIN_USER + ADMIN_PASS);
+      const ok = user === ADMIN_USER || user === ADMIN_CODE;
 
       if (adminFailCount >= 5) {
         if (err) err.textContent = "TOO MANY ATTEMPTS — WAIT A MOMENT";
@@ -4694,13 +4681,13 @@
       if (!ok) {
         adminFailCount++;
         sfxError();
-        if (err) err.textContent = "WRONG USERNAME OR PASSWORD";
+        if (err) err.textContent = "WRONG USERNAME";
         if (card) {
           card.classList.remove("shake");
           void card.offsetWidth;
           card.classList.add("shake");
         }
-        if (passEl) { passEl.value = ""; passEl.focus(); }
+        if (userEl) { userEl.focus(); userEl.select(); }
         return false;
       }
 
