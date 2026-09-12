@@ -1904,8 +1904,8 @@
             <p>Save a full pixel ROM to your device. Works offline.</p>
             <button class="download-btn" id="downloadFileBtn" type="button"><i class="ti ti-file-download"></i> DOWNLOAD .InfiniteFlip</button>
             <div class="export-import-row">
-              <button class="btn" id="exportSaveBtn" type="button"><i class="ti ti-clipboard"></i> EXPORT</button>
-              <button class="btn" id="importSaveBtn" type="button"><i class="ti ti-clipboard-text"></i> IMPORT</button>
+              <button class="btn" id="exportSaveBtn" type="button"><i class="ti ti-clipboard"></i> EXPORT .InfiniteFlip</button>
+              <button class="btn" id="importSaveBtn" type="button"><i class="ti ti-clipboard-text"></i> IMPORT .InfiniteFlip</button>
             </div>
             <div class="save-slot-row">
               <button class="save-slot-btn active" data-slot="1">SLOT 1</button>
@@ -3813,32 +3813,89 @@
       updateUI();
     }
 
+    function buildInfiniteFlipSaveFile() {
+      saveGame();
+      let raw = {};
+      try { raw = JSON.parse(localStorage.getItem(getSaveKey()) || "{}"); } catch (e) { raw = {}; }
+      return {
+        format: "InfiniteFlipSave",
+        version: 1,
+        savedAt: new Date().toISOString(),
+        slot: (typeof currentSlot !== "undefined" ? currentSlot : 1),
+        data: raw
+      };
+    }
+
     function exportSave() {
       try {
-        const data = localStorage.getItem(getSaveKey()) || "";
-        const ta = document.createElement("textarea");
-        ta.value = data;
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.select();
-        try { document.execCommand("copy"); setOutcome("SAVE COPIED!", "win"); sfxClick(); }
-        catch(e) { prompt("Copy this save data:", data); }
-        document.body.removeChild(ta);
-      } catch (e) { prompt("Copy this save data:", localStorage.getItem(getSaveKey()) || ""); sfxClick(); }
+        const payload = buildInfiniteFlipSaveFile();
+        const text = JSON.stringify(payload, null, 2);
+        const blob = new Blob([text], { type: "application/x-infiniteflip" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "InfiniteFlip-save.InfiniteFlip";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setOutcome("EXPORTED .InfiniteFlip", "win");
+        sfxClick();
+      } catch (e) {
+        sfxError();
+        setOutcome("EXPORT FAILED", "lose");
+      }
+    }
+
+    function applyImportedSaveObject(obj) {
+      let saveData = null;
+      if (obj && obj.format === "InfiniteFlipSave" && obj.data) {
+        saveData = validateSaveData(obj.data);
+      } else {
+        // legacy raw save JSON
+        saveData = validateSaveData(obj);
+      }
+      if (!saveData) throw new Error("Save data does not match the expected schema");
+      localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
+      location.reload();
     }
 
     function importSave() {
       try {
-        const input = prompt("Paste your save data:");
-        if (!input || !input.trim()) return;
-        const saveData = validateSaveData(JSON.parse(input.trim()));
-        if (!saveData) throw new Error("Save data does not match the expected schema");
-        localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
-        location.reload();
+        const picker = document.createElement("input");
+        picker.type = "file";
+        picker.accept = ".InfiniteFlip,application/x-infiniteflip,application/json,text/plain";
+        picker.style.display = "none";
+        picker.addEventListener("change", () => {
+          const file = picker.files && picker.files[0];
+          document.body.removeChild(picker);
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const text = String(reader.result || "").trim();
+              if (text.startsWith("<!DOCTYPE") || text.startsWith("<html")) {
+                throw new Error("That file is a game ROM, not a save");
+              }
+              const obj = JSON.parse(text);
+              applyImportedSaveObject(obj);
+            } catch (e) {
+              sfxError();
+              setOutcome("INVALID .InfiniteFlip SAVE", "lose");
+            }
+          };
+          reader.onerror = () => {
+            sfxError();
+            setOutcome("IMPORT FAILED", "lose");
+          };
+          reader.readAsText(file);
+        });
+        document.body.appendChild(picker);
+        picker.click();
+        sfxClick();
       } catch (e) {
         sfxError();
-        setOutcome("INVALID SAVE DATA", "lose");
+        setOutcome("IMPORT FAILED", "lose");
       }
     }
 
