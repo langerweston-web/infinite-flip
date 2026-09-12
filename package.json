@@ -1,6 +1,6 @@
 {
   "name": "infinite-flip",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Infinite Flip desktop game",
   "main": "main.js",
   "author": "langerweston-web",
@@ -8,7 +8,8 @@
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win portable",
-    "dist:dir": "electron-builder --win dir"
+    "dist:dir": "electron-builder --win dir",
+    "dist:mac": "electron-builder --mac zip"
   },
   "build": {
     "appId": "com.langerweston.infiniteflip",
@@ -35,7 +36,23 @@
       "signAndEditExecutable": false,
       "icon": "build/icon.ico"
     },
-    "icon": "build/icon.png"
+    "icon": "build/icon.png",
+    "mac": {
+      "target": [
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.games",
+      "identity": null,
+      "gatekeeperAssess": false,
+      "hardenedRuntime": false
+    }
   },
   "devDependencies": {
     "electron": "^33.2.0",
