@@ -1902,7 +1902,7 @@
 
           <div class="download-box">
             <p>Save a full pixel ROM to your device. Works offline.</p>
-            <button class="download-btn" id="downloadFileBtn" type="button"><i class="ti ti-file-download"></i> DOWNLOAD .InfiniteFlip</button>
+            <button class="download-btn" id="downloadFileBtn" type="button"><i class="ti ti-file-download"></i> DOWNLOAD ROM</button>
             <div class="export-import-row">
               <button class="btn" id="exportSaveBtn" type="button"><i class="ti ti-clipboard"></i> EXPORT .InfiniteFlip</button>
               <button class="btn" id="importSaveBtn" type="button"><i class="ti ti-clipboard-text"></i> IMPORT .InfiniteFlip</button>
@@ -4894,11 +4894,11 @@
     function downloadCurrentPage() {
       sfxClick();
       const content = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-      const blob = new Blob([content], { type: "application/x-infiniteflip" });
+      const blob = new Blob([content], { type: "text/html" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "InfiniteFlip.InfiniteFlip";
+      a.download = "infinite-flip.html";
       document.body.appendChild(a);
       a.click();
       a.remove();
