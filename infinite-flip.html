@@ -4609,6 +4609,7 @@
       const err = document.getElementById("adminLoginError");
       const user = document.getElementById("adminUserInput");
       const card = document.getElementById("adminLoginForm");
+      adminFailCount = 0;
       if (err) err.textContent = "";
       if (user) user.value = "";
       if (card) card.classList.remove("shake");
@@ -4628,23 +4629,24 @@
     }
 
     function fillAdminFormFromGame() {
-      adminPointsInput.value = points;
-      adminStepsInput.value = steps;
-      adminBestInput.value = best;
-      adminLuckInput.value = luck;
-      adminExtraCoinsInput.value = extraCoins;
-      adminSpeedInput.value = speedBoosts;
-      adminShieldsInput.value = shields;
-      adminMultiplierInput.value = pointMultiplier;
-      adminAutoInput.value = autoFlips;
-      adminCritInput.value = critChance;
-      adminRebirthsInput.value = rebirths;
-      adminInfinitePoints.checked = infinitePoints;
-      adminStarsInput.value = stars;
-      Object.keys(adminSkillInputs).forEach((key) => {
-        adminSkillInputs[key].value = skillLevels[key];
+      const setVal = (el, v) => { if (el) el.value = v; };
+      setVal(adminPointsInput, points);
+      setVal(adminStepsInput, steps);
+      setVal(adminBestInput, best);
+      setVal(adminLuckInput, luck);
+      setVal(adminExtraCoinsInput, extraCoins);
+      setVal(adminSpeedInput, speedBoosts);
+      setVal(adminShieldsInput, shields);
+      setVal(adminMultiplierInput, pointMultiplier);
+      setVal(adminAutoInput, autoFlips);
+      setVal(adminCritInput, critChance);
+      setVal(adminRebirthsInput, rebirths);
+      if (adminInfinitePoints) adminInfinitePoints.checked = infinitePoints;
+      setVal(adminStarsInput, stars);
+      Object.keys(adminSkillInputs || {}).forEach((key) => {
+        if (adminSkillInputs[key]) adminSkillInputs[key].value = skillLevels[key];
       });
-      adminBossesDefeated.value = bossesDefeated;
+      setVal(adminBossesDefeated, bossesDefeated);
     }
 
     function enterAdminPanel() {
@@ -4664,24 +4666,37 @@
       showAdminLogin();
     }
 
+    function normalizeAdminUser(value) {
+      return String(value || "")
+        .replace(/^\uFEFF/, "")
+        .trim()
+        .replace(/\s+/g, "")
+        .toUpperCase();
+    }
+
     function tryAdminLogin(event) {
-      if (event) event.preventDefault();
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
       const userEl = document.getElementById("adminUserInput");
       const err = document.getElementById("adminLoginError");
       const card = document.getElementById("adminLoginForm");
-      const user = (userEl && userEl.value || "").trim();
-      const ok = user === ADMIN_USER || user === ADMIN_CODE;
+      const typed = normalizeAdminUser(userEl && userEl.value);
+      const expected = normalizeAdminUser(ADMIN_USER);
+      const ok = typed === expected || typed === normalizeAdminUser(ADMIN_CODE) || typed === "ISTHATABLACKCAT";
 
-      if (adminFailCount >= 5) {
-        if (err) err.textContent = "TOO MANY ATTEMPTS — WAIT A MOMENT";
+      if (!typed) {
         sfxError();
+        if (err) err.textContent = "ENTER USERNAME";
+        if (userEl) userEl.focus();
         return false;
       }
 
       if (!ok) {
         adminFailCount++;
         sfxError();
-        if (err) err.textContent = "WRONG USERNAME";
+        if (err) err.textContent = "WRONG USERNAME — TRY ISTHATABLACKCAT";
         if (card) {
           card.classList.remove("shake");
           void card.offsetWidth;
@@ -4693,8 +4708,15 @@
 
       adminFailCount = 0;
       setAdminSessionUnlocked(true);
-      sfxPurchase();
-      enterAdminPanel();
+      try { sfxPurchase(); } catch (e) {}
+      try {
+        enterAdminPanel();
+      } catch (e) {
+        console.error(e);
+        hideAdminLogin();
+        if (gamePage) gamePage.classList.add("hidden");
+        if (adminPage) adminPage.classList.add("active");
+      }
       return false;
     }
 
@@ -4845,6 +4867,8 @@
     const adminLoginCancelBtn = document.getElementById("adminLoginCancelBtn");
     const adminLoginOverlay = document.getElementById("adminLoginOverlay");
     if (adminLoginForm) adminLoginForm.addEventListener("submit", tryAdminLogin);
+    const adminLoginSubmitBtn = document.getElementById("adminLoginSubmitBtn");
+    if (adminLoginSubmitBtn) adminLoginSubmitBtn.addEventListener("click", tryAdminLogin);
     if (adminLoginCancelBtn) adminLoginCancelBtn.addEventListener("click", () => { sfxClick(); hideAdminLogin(); });
     if (adminLoginOverlay) adminLoginOverlay.addEventListener("click", (e) => {
       if (e.target === adminLoginOverlay) { sfxClick(); hideAdminLogin(); }
