@@ -1582,6 +1582,95 @@
     body.light .slot-symbol, body.light .roulette-cell, body.light .training-boost,
     body.light .treasure-tile { background: #f8fafc; }
 
+
+    /* Admin login modal */
+    .admin-login-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      place-items: center;
+      background: rgba(2, 6, 23, .78);
+      backdrop-filter: blur(4px);
+      padding: 18px;
+    }
+    .admin-login-overlay.active { display: grid; }
+    .admin-login-card {
+      width: min(100%, 420px);
+      background: linear-gradient(180deg, #1e2937, #0f172a);
+      border: 4px solid var(--gold-1);
+      border-radius: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.65), 0 0 0 2px #78350f;
+      padding: 28px 24px 22px;
+      animation: revealUp .35s ease both;
+    }
+    .admin-login-card.shake { animation: loseShake .45s ease; }
+    .admin-login-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--gold-1);
+      text-align: center;
+      margin-bottom: 6px;
+      text-shadow: 2px 2px 0 #000;
+    }
+    .admin-login-card .login-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: .78rem;
+      margin-bottom: 18px;
+    }
+    .admin-login-card .login-lock {
+      width: 64px; height: 64px; margin: 0 auto 14px;
+      border: 3px solid var(--gold-1); border-radius: 10px;
+      display: grid; place-items: center;
+      background: #14532d;
+      box-shadow: 0 4px 0 #000, inset 0 2px 0 rgba(255,255,255,.15);
+      font-size: 28px;
+    }
+    .admin-login-field { margin-bottom: 12px; }
+    .admin-login-field label {
+      display: block; font-size: .7rem; color: var(--muted);
+      margin-bottom: 6px; letter-spacing: .08em; text-transform: uppercase;
+    }
+    .admin-login-field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 3px solid var(--line);
+      border-radius: 8px;
+      background: #0f172a;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 1rem;
+      outline: none;
+      box-shadow: inset 0 2px 0 rgba(0,0,0,.35);
+    }
+    .admin-login-field input:focus {
+      border-color: var(--gold-1);
+      box-shadow: 0 0 0 2px rgba(250,204,21,.25);
+    }
+    .admin-login-error {
+      min-height: 1.2em;
+      color: var(--red);
+      font-size: .75rem;
+      text-align: center;
+      margin: 4px 0 12px;
+    }
+    .admin-login-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .admin-login-actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .admin-login-actions .btn.primary {
+      background: linear-gradient(180deg, #ca8a04, #a16207);
+      border-color: #facc15;
+      color: #1e2937;
+      font-weight: 700;
+    }
+
   </style>
 </head>
 <body>
@@ -1808,10 +1897,32 @@
             </div>
           </div>
 
-          <p class="footer-note" style="margin-top: 12px;">ADMIN: /northernnyamo008/8579</p>
+          <p class="footer-note" style="margin-top: 12px;">ADMIN ACCESS VIA LOCK BUTTON</p>
         </aside>
       </div>
     </main>
+
+
+    <div class="admin-login-overlay" id="adminLoginOverlay" aria-hidden="true">
+      <form class="admin-login-card" id="adminLoginForm" autocomplete="off">
+        <div class="login-lock" aria-hidden="true"><i class="ti ti-lock"></i></div>
+        <h3>ADMIN LOGIN</h3>
+        <p class="login-sub">ENTER CREDENTIALS TO OPEN THE CHEAT PANEL</p>
+        <div class="admin-login-field">
+          <label for="adminUserInput">USERNAME</label>
+          <input id="adminUserInput" type="text" maxlength="40" placeholder="username" autocomplete="username" />
+        </div>
+        <div class="admin-login-field">
+          <label for="adminPassInput">PASSWORD</label>
+          <input id="adminPassInput" type="password" maxlength="40" placeholder="••••" autocomplete="current-password" />
+        </div>
+        <div class="admin-login-error" id="adminLoginError" role="alert"></div>
+        <div class="admin-login-actions">
+          <button class="btn" type="button" id="adminLoginCancelBtn"><i class="ti ti-x"></i><span>CANCEL</span></button>
+          <button class="btn primary" type="submit" id="adminLoginSubmitBtn"><i class="ti ti-key"></i><span>UNLOCK</span></button>
+        </div>
+      </form>
+    </div>
 
     <section class="admin-page" id="adminPage" aria-label="Admin page">
       <header class="admin-topbar">
@@ -2396,7 +2507,11 @@
       { id: "secretSeeker", name: "SECRET SEEKER", desc: "Find any secret", icon: "ti ti-key" }
     ];
 
-    const ADMIN_CODE = "/northernnyamo008/8579";
+    const ADMIN_USER = "northernnyamo008";
+    const ADMIN_PASS = "8579";
+    const ADMIN_CODE = "/" + ADMIN_USER + "/" + ADMIN_PASS; // legacy single-code support
+    const ADMIN_SESSION_KEY = "infiniteFlip_adminUnlocked";
+    let adminFailCount = 0;
     const INFINITE_POINTS_VALUE = 999999999;
 
     const SKILLS = {
@@ -4443,15 +4558,43 @@
       updateUI();
     }
 
-    function openAdminPage() {
-      const code = prompt("ADMIN CODE:");
-      if (code !== ADMIN_CODE) {
-        sfxError();
-        alert("WRONG CODE");
-        return;
-      }
-      sfxClick();
+    function isAdminSessionUnlocked() {
+      try { return sessionStorage.getItem(ADMIN_SESSION_KEY) === "1"; } catch (e) { return false; }
+    }
 
+    function setAdminSessionUnlocked(on) {
+      try {
+        if (on) sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
+        else sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      } catch (e) {}
+    }
+
+    function showAdminLogin() {
+      const overlay = document.getElementById("adminLoginOverlay");
+      const err = document.getElementById("adminLoginError");
+      const user = document.getElementById("adminUserInput");
+      const pass = document.getElementById("adminPassInput");
+      const card = document.getElementById("adminLoginForm");
+      if (err) err.textContent = "";
+      if (user) user.value = "";
+      if (pass) pass.value = "";
+      if (card) card.classList.remove("shake");
+      if (overlay) {
+        overlay.classList.add("active");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+      setTimeout(() => { if (user) user.focus(); }, 50);
+    }
+
+    function hideAdminLogin() {
+      const overlay = document.getElementById("adminLoginOverlay");
+      if (overlay) {
+        overlay.classList.remove("active");
+        overlay.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    function fillAdminFormFromGame() {
       adminPointsInput.value = points;
       adminStepsInput.value = steps;
       adminBestInput.value = best;
@@ -4469,9 +4612,64 @@
         adminSkillInputs[key].value = skillLevels[key];
       });
       adminBossesDefeated.value = bossesDefeated;
+    }
 
+    function enterAdminPanel() {
+      hideAdminLogin();
+      fillAdminFormFromGame();
       gamePage.classList.add("hidden");
       adminPage.classList.add("active");
+      setOutcome("ADMIN UNLOCKED", "win");
+    }
+
+    function openAdminPage() {
+      sfxClick();
+      if (isAdminSessionUnlocked()) {
+        enterAdminPanel();
+        return;
+      }
+      showAdminLogin();
+    }
+
+    function tryAdminLogin(event) {
+      if (event) event.preventDefault();
+      const userEl = document.getElementById("adminUserInput");
+      const passEl = document.getElementById("adminPassInput");
+      const err = document.getElementById("adminLoginError");
+      const card = document.getElementById("adminLoginForm");
+      const user = (userEl && userEl.value || "").trim();
+      const pass = (passEl && passEl.value || "").trim();
+      const combined = "/" + user + "/" + pass;
+      const ok =
+        (user === ADMIN_USER && pass === ADMIN_PASS) ||
+        combined === ADMIN_CODE ||
+        (user === "" && pass === ADMIN_CODE) ||
+        (user + pass === ADMIN_USER + ADMIN_PASS);
+
+      if (adminFailCount >= 5) {
+        if (err) err.textContent = "TOO MANY ATTEMPTS — WAIT A MOMENT";
+        sfxError();
+        return false;
+      }
+
+      if (!ok) {
+        adminFailCount++;
+        sfxError();
+        if (err) err.textContent = "WRONG USERNAME OR PASSWORD";
+        if (card) {
+          card.classList.remove("shake");
+          void card.offsetWidth;
+          card.classList.add("shake");
+        }
+        if (passEl) { passEl.value = ""; passEl.focus(); }
+        return false;
+      }
+
+      adminFailCount = 0;
+      setAdminSessionUnlocked(true);
+      sfxPurchase();
+      enterAdminPanel();
+      return false;
     }
 
     function closeAdminPage() {
@@ -4617,6 +4815,14 @@
     downloadSelfBtn.addEventListener("click", downloadCurrentPage);
     downloadFileBtn.addEventListener("click", downloadCurrentPage);
     adminLoginBtn.addEventListener("click", openAdminPage);
+    const adminLoginForm = document.getElementById("adminLoginForm");
+    const adminLoginCancelBtn = document.getElementById("adminLoginCancelBtn");
+    const adminLoginOverlay = document.getElementById("adminLoginOverlay");
+    if (adminLoginForm) adminLoginForm.addEventListener("submit", tryAdminLogin);
+    if (adminLoginCancelBtn) adminLoginCancelBtn.addEventListener("click", () => { sfxClick(); hideAdminLogin(); });
+    if (adminLoginOverlay) adminLoginOverlay.addEventListener("click", (e) => {
+      if (e.target === adminLoginOverlay) { sfxClick(); hideAdminLogin(); }
+    });
     backToGameBtn.addEventListener("click", closeAdminPage);
     adminSaveBtn.addEventListener("click", saveAdminChanges);
     adminResetBtn.addEventListener("click", resetStats);
